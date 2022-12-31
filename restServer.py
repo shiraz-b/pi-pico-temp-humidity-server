@@ -1,3 +1,11 @@
+# REST Server
+# I used the Connecting to the Internet with Raspberry Pi Pico W as the basis
+# for this code. (See: https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf)
+# However, I hacked this into a, very much first draft, python class to allow easy setup and usage
+# for extracting specified "Verb [Resource..]" from the client.
+# There's a fair amount of cleanup that can be done (not least of which is tidying up my very poor exception usage)
+# Please go ahead and issue a PR if you want it cleaned up  - I just ask that you not alter the API without
+# a conversation with me. thanks!
 import network
 import socket
 import time
@@ -78,7 +86,7 @@ class RESTService:
                 break
             print("Retry: " + str(retries) + ", Status: " + self.__connectionStatus(status))
             retries += 1
-            # toggle the internal LED so show we are working
+            # toggle the internal LED to show we are working
             Pin("LED", Pin.OUT).toggle()
             
         # Handle connection errors
@@ -95,6 +103,7 @@ class RESTService:
             Pin("LED", Pin.OUT).toggle()
             time.sleep_ms(self.FASTFLASHBLINK)
 
+        # Now start listening
         address = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
         self.sock = socket.socket()
         self.sock.bind(address)
@@ -107,6 +116,8 @@ class RESTService:
     #   Will accept requests until the specified Verb and one of the list of
     #   resources has been asked for. Returns the resource requested.
     #   For all other non-matching REST requests a 404 is given as the response.
+    #   e.g.  If you want to look for a GET on either /about or /mesurement you
+    #   just need to call this method with: obtainRequest("GET", ["/about", "/measurement"])
     def obtainRequest(self, verb, *resources):
         
         # Precondition: Network is connected and not waiting for a response

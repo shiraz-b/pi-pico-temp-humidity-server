@@ -10,8 +10,7 @@ import network
 import socket
 import time
 import rp2
-
-from machine import Pin
+import ledControl
 
 class RESTService:
     
@@ -35,7 +34,7 @@ class RESTService:
     LINK_BADAUTH = -3
 
     HTTP_OK        = "HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n"
-    HTTP_NOT_FOUND = "HTTP/1.0 404 NOT FOUND\r\n"
+    HTTP_NOT_FOUND = "HTTP/1.0 404 NOT FOUND\r\nContent-type: text/html\r\n\r\n<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p><hr><address>Pi Pico Temperature/Humidity Sensor Port 80</address></body></html>"
     
     # Constructor: Input: SSID and Password
     def __init__(self, ssid, password):
@@ -86,8 +85,7 @@ class RESTService:
                 break
             print("Retry: " + str(retries) + ", Status: " + self.__connectionStatus(status))
             retries += 1
-            # toggle the internal LED to show we are working
-            Pin("LED", Pin.OUT).toggle()
+            ledControl.toggleLED("LED")
             
         # Handle connection errors
         if status != self.LINK_UP:
@@ -99,9 +97,7 @@ class RESTService:
 
         print("Connected!  IP Address: " + config[0])
         # Flash the internal LED quickly for 2 seconds to signal good connection
-        for x in range(self.FASTFLASHTIME/self.FASTFLASHBLINK):
-            Pin("LED", Pin.OUT).toggle()
-            time.sleep_ms(self.FASTFLASHBLINK)
+        ledControl.flashLED("LED", self.FASTFLASHTIME, self.FASTFLASHBLINK)
 
         # Now start listening
         address = socket.getaddrinfo("0.0.0.0", 80)[0][-1]

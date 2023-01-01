@@ -1,8 +1,9 @@
 from machine import Pin, I2C
 import am2320
-import utime
+import time
 import restServer
 import sensitiveData
+import ledControl
 
 def tempHumidityReading(sensor):
     if ( sensor.measure() ):
@@ -14,13 +15,10 @@ def tempHumidityReading(sensor):
         humidity = 0
     return temperature, humidity
 
-def toggleInternalLED():
-    Pin("LED", Pin.OUT).toggle()
-
 def main():
     # Add short delay when starting from boot to allow
     # I2C devices to settle
-    utime.sleep(1)
+    time.sleep_ms(1000)
 
     # Setup temperature and humid sensor (part am2320)
     i2c_dev = machine.I2C(0,scl=Pin(5),sda=Pin(4),freq=400000)  # start I2C on GPIO 4&5
@@ -43,7 +41,7 @@ def main():
             response = "{ \"what\" : \"Temperature and Humidity Sensor\", \"who\" : \"Shiraz Billimoria\", \"when\" : \"Dec 2022\", \"where\" : \"https://github.com/shiraz-b/pi-pico-temp-humidity-server\" }"
         else:
             response = "{ \"error\" : \"how did you get here?\" }"
-        toggleInternalLED()
+        ledControl.toggleLED("LED")
         rest.sendResponse(response)
         print("Waiting for REST Request")
 

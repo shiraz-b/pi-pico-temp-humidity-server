@@ -66,8 +66,8 @@ Some notes on the code:
 Lots of scope for getting this more robust:
   * Exception Handling - this is true of *all* of this code
   * More/Better REST parsing:  Maybe a list of verbs?
-  * Async: This is the biggie.  The code is synchronous at the moment a massing improvement would be to get this async
-*` am2320.py`
+  * Async: This is the biggie.  The code is synchronous at the moment a massive improvement would be to get this async.
+* `am2320.py`
 
   This is a straight copy from [mcausers repo](https://github.com/mcauser/micropython-am2320) (many thanks!) with a minor tweak
 * `ledControl.py`
@@ -81,9 +81,10 @@ Lots of scope for getting this more robust:
   It expects a file to exist `sensitiveData.py` to obtain the SSID and Password for your Access Point.
 * `sensitiveData.py`
 
-  **This is a file you'll need to add yourself!**  It just needs a class names SSIDDATA with two constants ssid and passwor.  (Hmm - should probably get those in CAPITALS given what seems to be the Python convention for constants (really?  No build in constants?  Am I missing something!!)
+  **This is a file you'll need to add yourself!**  It just needs a class named `SSIDDATA` with two constants ssid and password.
+(Hmm - should probably get those in CAPITALS given what seems to be the Python convention for constants (really?  No built in constants?  Am I missing something?!)
   
-  Here's an example:
+  Here's the example:
   ```python
   class SSIDDATA:
     ssid = "<ssid_name>"

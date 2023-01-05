@@ -9,12 +9,10 @@ This project uses a Pi Pico W and Temp/Humidity Sensor to produce an HTTP (NOT H
 Please note, this is a fairly naive implementation of both Hardware and Software.  I've been using this as a learning exercise.
 Specifically I want to produce a few of these units, stick them around the house and connect them to my
 [Home Assistant](https://www.home-assistant.io/) Pi 3 Server to get data on how the house heats up/cools down during the day.
-a learning exercise.
 
 I'm very happy to hear from anybody if they have any tips/things I'm missed/things I've just got wrong!
 
-**NOTE** The code here is imcomplete and expects a file called sensitiveData.py to contain SSID/Password data for your Access Point.
-See the Coding section below for more details.
+**NOTE** The code here is imcomplete.  **You need to add your access point SSID and password into `sensitiveData.py`**.
 ## Hardware
 The Hardware I used
 
@@ -81,15 +79,7 @@ Lots of scope for getting this more robust:
   It expects a file to exist `sensitiveData.py` to obtain the SSID and Password for your Access Point.
 * `sensitiveData.py`
 
-  **This is a file you'll need to add yourself!**  It just needs a class named `SSIDDATA` with two constants ssid and password.
-(Hmm - should probably get those in CAPITALS given what seems to be the Python convention for constants (really?  No built in constants?  Am I missing something?!)
-  
-  Here's the example:
-  ```python
-  class SSIDDATA:
-    ssid = "<ssid_name>"
-    password = "<ssid_password>"
-  ```
+  **You need to add your access point SSID and password into `sensitiveData.py`**
   
 ## Usage
 ## Links

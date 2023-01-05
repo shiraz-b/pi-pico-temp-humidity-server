@@ -29,6 +29,7 @@ import time
 class AM2320:
     
     ERROR_READING=111
+    debug=False
     
     def __init__(self, i2c=None, address=0x5c):
         self.i2c = i2c
@@ -39,20 +40,34 @@ class AM2320:
         buf = self.buf
         address = self.address
         # wake sensor
+        if self.debug:
+            print("writeto(address, b)")
         try:
             self.i2c.writeto(address, b'')
-        except OSError:
+        except OSError as err:
+            if self.debug:
+                print(f"writeto (empty) error (continuing): Unexpected {err=}, {type(err)=}")
             pass
         # read 4 registers starting at offset 0x00
+        if self.debug:
+            print("writeto(address, bx03x00x04)")
         self.i2c.writeto(address, b'\x03\x00\x04')
         # wait at least 1.5ms
-        time.sleep_ms(2)
+        time.sleep_ms(10)
         # read data
+        if self.debug:
+            print("readfrom_mem_into(address, 0, buf)")
         self.i2c.readfrom_mem_into(address, 0, buf)
         self.readinggood = True
+        if self.debug:
+            print("unpack")
         crc = ustruct.unpack('<H', bytearray(buf[-2:]))[0]
+        if self.debug:
+            print("Run CRC")
         if (crc != self.crc16(buf[:-2])):
             # Set readinggood to False
+            if self.debug:
+                print("crc error detected")
             self.readinggood = False
         return self.readinggood
     def crc16(self, buf):

@@ -33,9 +33,11 @@ class RESTService:
     LINK_NONET   = -2
     LINK_BADAUTH = -3
 
-    HTTP_OK        = "HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n"
-    HTTP_NOT_FOUND = "HTTP/1.0 404 NOT FOUND\r\nContent-type: text/html\r\n\r\n<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p><hr><address>Pi Pico Temperature/Humidity Sensor Port 80</address></body></html>"
-    
+    HTTP_OK                  = "HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n"
+    HTTP_NOT_FOUND           = "HTTP/1.0 404 NOT FOUND\r\nContent-type: text/html\r\n\r\n<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p><hr><address>Pi Pico Temperature/Humidity Sensor Port 80</address></body></html>"
+    HTTP_SERVICE_UNAVAILABLE = "HTTP/1.0 503 NOT FOUND\r\nContent-type: text/html\r\n\r\n<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>503 Service Unavailable</title></head><body><h1>Service Unavailable</h1><p>Service is temporarily unavailable, try again later</p><hr><address>Pi Pico Temperature/Humidity Sensor Port 80</address></body></html>"
+    HTTP_INTERNAL_SERVER_ERROR = "HTTP/1.0 500 NOT FOUND\r\nContent-type: text/html\r\n\r\n<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1><p>Internal Server Error</p><hr><address>Pi Pico Temperature/Humidity Sensor Port 80</address></body></html>"
+
     # Constructor: Input: SSID and Password
     def __init__(self, ssid, password):
         self.ssid = ssid
@@ -128,7 +130,8 @@ class RESTService:
                 print("Client connection from: ", conaddr)
                 request = self.connection.recv(1024)
                 request = str(request)
-                #print(request)
+                self.responseOutstanding = True
+                # print(request)
                 # Requests come out as b'<stuff>' - we want the 'stuff' split out.
                 requestList = request.split("'")[1].split()
                 # print(*requestList, sep = "\n")
@@ -139,12 +142,10 @@ class RESTService:
                 for resource in resources:
                     if resource == requestResource:
                         print("Found resource:" + requestResource)
-                        self.responseOutstanding = True
                         return resource
-                        
-                self.connection.send(self.HTTP_NOT_FOUND)
-                self.connection.close()
-                print("Resource not found.  Returned 404 and connection closed")
+
+                # If no defined resource found then send a 404 and try again
+                self.sendErrorResponse(404)
 
         except OSError as err:
             self.connection.close()
@@ -166,7 +167,38 @@ class RESTService:
         print("Success: Response sent and connection closed")
         
         return True
+
+    # Send a 503 response and close the connection
+    def sendErrorResponse(self, httpError):
+
+        # Precondition: Network is connected and waiting for a response
+        if not self.networkConnected or not self.responseOutstanding:
+            print("sendResponse precondition failure")
+            return False
         
+        if httpError == 503:
+            self.connection.send(self.HTTP_SERVICE_UNAVAILABLE)
+            sent = "503 SERVICE UNAVAILABLE"
+        elif httpError == 404:
+            self.connection.send(self.HTTP_NOT_FOUND)
+            sent = "404 NOT FOUND"
+        else:
+            # Default to 500
+            self.connection.send(self.HTTP_INTERNAL_SERVER_ERROR)            
+            sent = "500 INTERNAL SERVER ERROR"
+        self.connection.close()
+        self.responseOutstanding = False
+        print("Response " + sent + " and connection closed")
+        
+        return True
+
+    def closeDownNetwork(self):
+        print("Closing connection")
+        self.connection.close()
+        print("Closing socket")
+        self.sock.close()
+        print("Disconnecting WiFi")
+        self.wlan.disconnect()
         
                   
     

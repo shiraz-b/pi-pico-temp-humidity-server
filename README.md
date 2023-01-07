@@ -12,7 +12,7 @@ Specifically I want to produce a few of these units, stick them around the house
 
 I'm very happy to hear from anybody if they have any tips/things I'm missed/things I've just got wrong!
 
-**NOTE** The code here is imcomplete.  **You need to add your access point SSID and password into `sensitiveData.py`**.
+**NOTE** The code here is incomplete.  **You need to add your access point SSID and password into `sensitiveData.py`**.
 ## Hardware
 The Hardware I used
 
@@ -84,3 +84,10 @@ Lots of scope for getting this more robust:
   
 ## Usage
 ## Links
+## Future Enhancements
+* Move to MTTQ push notifications
+* Investigate low power modes.  If we move to MTTQ then we should be able to:
+  * Wake
+  * Read temp and Humidity
+  * Send reading to Home Assistant
+  * Sleep

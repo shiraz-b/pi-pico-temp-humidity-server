@@ -28,6 +28,7 @@ def main():
     # Add short delay when starting from boot to allow
     # I2C devices to settle
     time.sleep_ms(1000)
+    forever = True
 
     # Setup temperature and humid sensor (part am2320)
     i2c_dev = machine.I2C(0,scl=Pin(5),sda=Pin(4),freq=100000)  # start I2C on GPIO 4&5
@@ -36,32 +37,39 @@ def main():
     # Setup the REST service and looks for GETs of /about and /measurement
     rest = restServer.RESTService(sensitiveData.SSIDDATA.ssid, sensitiveData.SSIDDATA.password)
     connected = rest.connectAndListen()
-    allowed_resources = ["/about", "/measurement"]    
+    allowed_resources = ["/about", "/measurement", "/stop"]
+    # Yes - I know, that's terrible and not REST compliant at all.  Shouldn't have actions.. /stop should be a DELETE to the resource
     
     try:
         # repeat forever
-        while True:
+        while forever:
             resource = rest.obtainRequest("GET", *allowed_resources)
             print("Got resource: " + resource)
             if resource == "/measurement":
                 goodReading, temp, humid = tempHumidityReading(sensor)
                 if goodReading:
-                    response = "{ \"temperature\" : \"" + str(temp) + "\", \"temperatureUnit\" : \"celsius\", \"humidity\" : \"" + str(humid) + "\" }"
+                    response = "{\n  \"temperature\" : " + str(temp) + ",\n  \"temperatureUnit\" : \"celsius\",\n  \"humidity\" : " + str(humid) + "\n}\n"
                     print("Temp: {}C RH {}%".format(temp, humid))
                 else:
                     rest.sendErrorResponse(503)
                     ledControl.toggleLED("LED")
                     continue
             elif resource == "/about":
-                response = "{ \"what\" : \"Temperature and Humidity Sensor\", \"who\" : \"Shiraz Billimoria\", \"when\" : \"Dec 2022\", \"where\" : \"https://github.com/shiraz-b/pi-pico-temp-humidity-server\" }"
+                response = "{\n  \"what\" : \"Temperature and Humidity Sensor\",\n  \"who\" : \"Shiraz Billimoria\",\n  \"when\" : \"Dec 2022\",\n  \"where\" : \"https://github.com/shiraz-b/pi-pico-temp-humidity-server\"\n}\n"
+            elif resource == "/stop":
+                response = "{\n  \"state\" : \"Service Stopping\"\n}\n"
+                forever = False
             else:
-                response = "{ \"error\" : \"This should not ever be seen as a 404 should have been sent before now\" }"
+                response = "{\n  \"error\" : \"how did you get here?\"\n}\n"
             ledControl.toggleLED("LED")
             rest.sendResponse(response)
             print("Waiting for REST Request")
     except Exception as err:
         print(f"Top Level Error (STOPPING): Unexpected {err=}, {type(err)=}")
-        rest.closeDownNetwork()
-        raise       
+
+    # Flash for a bit.. This also allows time for the response to get sent before we shutdown
+    # the network.
+    ledControl.flashLED("LED", 3000, 200)
+    rest.closeDownNetwork()
 
 main()

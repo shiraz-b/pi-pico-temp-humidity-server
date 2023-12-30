@@ -40,6 +40,8 @@ to have the Serial Clock (SCL) line high on initialisation for us to get into I2
 Thought: Maybe you don't need the pullup resistor for the Serial Data (SDA) line.  If I've got a moment I might
 change my breadboard layout and let you know.  This would save one resistor.
 
+UPDATE: Yep - you don't need a pull up on the data line - I now have 4 boards and only the first one has two pullups.  You really only need it on the control line.
+
 ![Front](https://github.com/shiraz-b/pi-pico-temp-humidity-server/blob/main/PXL_20221231_132143934.jpg "Front")
 ![Back](https://github.com/shiraz-b/pi-pico-temp-humidity-server/blob/main/PXL_20221231_132149784.jpg "Back showing my poor soldering!")
 
